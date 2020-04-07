@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Chess} from 'chess.js';
 import {AppThunk} from '../../app/store';
-import {indexToSan, sanToIndex} from '../../utils';
+import {indexToSan, sanToIndex, getPlayer} from '../../utils';
 
 interface BoardState {
   fen: string;
@@ -47,11 +47,12 @@ export const fetchValidMoves = (index: number): AppThunk => (
   const {
     board: {fen},
   } = getState();
+  const isWhite = getPlayer(fen) === 'white';
   const san = indexToSan(index);
   const engine = new Chess(fen);
   const validMoves = engine
     .moves({square: san})
-    .map((san: string) => sanToIndex(san.slice(-2)));
+    .map((san: string) => sanToIndex(san, isWhite));
   dispatch(getValidMovesSuccess(validMoves));
 };
 

@@ -30,8 +30,14 @@ export const getPlayer = (fen: string) =>
 export const indexToSan = (i: number) =>
   `${'abcdefgh'[i % 8]}${8 - Math.floor(i / 8)}`;
 
-export const sanToIndex = (san: string) => {
-  const [rank, row] = san;
+export const sanToIndex = (san: string, isWhite: boolean) => {
+  if (san === 'O-O') {
+    return isWhite ? 62 : 6;
+  } else if (san === 'O-O-O') {
+    return isWhite ? 58 : 2;
+  }
+
+  const [rank, row] = san.slice(-2);
   const index = (8 - Number(row)) * 8 + rank.charCodeAt(0) - 'a'.charCodeAt(0);
   return index;
 };
