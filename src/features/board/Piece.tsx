@@ -1,35 +1,34 @@
 import React from 'react';
 import styled from 'styled-components/native';
-
-const Container = styled.TouchableOpacity<Props>`
-  position: absolute;
-  left: ${props => props.left}px;
-  top: ${props => props.top}px;
-  width: ${props => props.size}px;
-  height: ${props => props.size}px;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Inner = styled.Text<Props>`
-  color: ${props => props.color};
-  font-size: 60px;
-  line-height: 60px;
-`;
+import {tileSize} from '../../utils';
 
 type Props = {
+  type: string;
+  index: number;
   children: string;
-  color: string;
-  left: number;
-  top: number;
-  size: number;
 };
 
 export const Piece = (props: Props) => {
   const {children, ...rest} = props;
   return (
-    <Container {...rest}>
+    <Container {...rest} pointerEvents={'none'}>
       <Inner {...rest}>{children}</Inner>
     </Container>
   );
 };
+
+const Container = styled.View<Props>`
+  position: absolute;
+  left: ${props => (props.index % 8) * tileSize}px;
+  top: ${props => Math.floor(props.index / 8) * tileSize}px;
+  width: ${tileSize}px;
+  height: ${tileSize}px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Inner = styled.Text<Props>`
+  color: ${props => (/[A-Z]/.test(props.type) ? 'white' : 'black')};
+  font-size: 60px;
+  line-height: 60px;
+`;
