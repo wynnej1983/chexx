@@ -1,23 +1,22 @@
 import React from 'react';
 import styled from 'styled-components/native';
-import {tileSize} from '../../utils';
+import {tileSize, pieceCode} from '../../utils';
 
 type Props = {
-  type: string;
   index: number;
-  children: string;
+  type: string;
 };
 
-export const Piece = (props: Props) => {
-  const {children, ...rest} = props;
+export const Piece = ({index, type}: Props) => {
+  const color = /[A-Z]/.test(type) ? 'white' : 'black';
   return (
-    <Container {...rest} pointerEvents={'none'}>
-      <Inner {...rest}>{children}</Inner>
+    <Container index={index} pointerEvents={'none'}>
+      <Glyph color={color}>{pieceCode[type.toLowerCase()]}</Glyph>
     </Container>
   );
 };
 
-const Container = styled.View<Props>`
+const Container = styled.View<{index: number}>`
   position: absolute;
   left: ${props => (props.index % 8) * tileSize}px;
   top: ${props => Math.floor(props.index / 8) * tileSize}px;
@@ -27,8 +26,8 @@ const Container = styled.View<Props>`
   justify-content: center;
 `;
 
-const Inner = styled.Text<Props>`
-  color: ${props => (/[A-Z]/.test(props.type) ? 'white' : 'black')};
+const Glyph = styled.Text<{color: string}>`
+  color: ${props => props.color};
   font-size: 60px;
   line-height: 60px;
 `;
