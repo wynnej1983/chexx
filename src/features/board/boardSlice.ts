@@ -7,12 +7,18 @@ interface BoardState {
   fen: string;
   selectedIndex: number;
   validMoves: number[];
+  lastMove: number[];
+  check: boolean;
+  gameOver: boolean;
 }
 
 const initialState: BoardState = {
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   selectedIndex: -1,
   validMoves: [],
+  lastMove: [],
+  check: false,
+  gameOver: false,
 };
 
 export const board = createSlice({
@@ -26,14 +32,18 @@ export const board = createSlice({
       state.selectedIndex = -1;
     },
     move: (state, action: PayloadAction<number>) => {
-      const from = indexToPos(state.selectedIndex);
+      const {selectedIndex, fen} = state;
+      const from = indexToPos(selectedIndex);
       const to = indexToPos(action.payload);
-      const engine = new Chess(state.fen);
+      const engine = new Chess(fen);
       const promotion =
         (to.includes('1') || to.includes('8')) &&
-        getPieces(state.fen)[state.selectedIndex].toLowerCase() === 'p' &&
+        getPieces(fen)[selectedIndex].toLowerCase() === 'p' &&
         'q'; // default to queen
       engine.move({from, to, promotion});
+      state.lastMove = [selectedIndex, action.payload];
+      state.check = engine.in_check();
+      state.gameOver = engine.game_over();
       state.fen = engine.fen();
       state.selectedIndex = -1;
       state.validMoves = [];

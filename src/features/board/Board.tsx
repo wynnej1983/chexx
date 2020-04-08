@@ -11,9 +11,14 @@ import {fetchValidMoves, unSelectTile, move} from './boardSlice';
 type Props = {};
 
 export const Board = ({}: Props) => {
-  const {fen, selectedIndex, validMoves} = useSelector(
-    (state: RootState) => state.board,
-  );
+  const {
+    fen,
+    selectedIndex,
+    validMoves,
+    lastMove,
+    check,
+    gameOver,
+  } = useSelector((state: RootState) => state.board);
   const dispatch = useDispatch();
   const player = getPlayer(fen);
   const pieces = getPieces(fen);
@@ -36,6 +41,7 @@ export const Board = ({}: Props) => {
           <Tile
             index={idx}
             disabled={
+              gameOver ||
               (pieces[idx] === '-' && selectedIndex < 0) ||
               (!validMoves.includes(idx) &&
                 selectedIndex > -1 &&
@@ -46,7 +52,9 @@ export const Board = ({}: Props) => {
                   : 'black') !== player)
             }
             selected={selectedIndex === idx}
+            lastMove={lastMove.includes(idx)}
             validMove={selectedIndex > -1 && validMoves.includes(idx)}
+            check={check && pieces[idx] === (player === 'white' ? 'K' : 'k')}
             onPress={onTilePressed}
           />
           {piece !== '-' && <Piece index={idx} type={piece} />}
