@@ -10,6 +10,7 @@ interface BoardState {
   lastMove: number[];
   check: boolean;
   gameOver: boolean;
+  ai: boolean;
 }
 
 const initialState: BoardState = {
@@ -19,6 +20,7 @@ const initialState: BoardState = {
   lastMove: [],
   check: false,
   gameOver: false,
+  ai: true,
 };
 
 export const board = createSlice({
@@ -76,6 +78,31 @@ export const fetchValidMoves = (index: number): AppThunk => (
     .moves({square: pos, verbose: true})
     .map((move: any) => posToIndex(move.to, isWhite));
   dispatch(getValidMovesSuccess(validMoves));
+};
+
+export const playerMove = (index: number): AppThunk => (dispatch, getState) => {
+  dispatch(move(index));
+  const {
+    board: {ai, gameOver},
+  } = getState();
+  if (ai && !gameOver) {
+    setTimeout(() => dispatch(aiMove()), 2000);
+  }
+};
+
+export const aiMove = (): AppThunk => (dispatch, getState) => {
+  const {
+    board: {fen},
+  } = getState();
+  const isWhite = getPlayer(fen) === 'white';
+  const engine = new Chess(fen);
+  const validMoves = engine.moves({verbose: true}).map((move: any) => ({
+    from: posToIndex(move.from, isWhite),
+    to: posToIndex(move.to, isWhite),
+  }));
+  const aiMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+  dispatch(selectTile(aiMove.from));
+  dispatch(move(aiMove.to));
 };
 
 export default board.reducer;

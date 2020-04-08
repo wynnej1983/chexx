@@ -6,7 +6,7 @@ import {RootState} from 'src/app/rootReducer';
 import {Tile} from './Tile';
 import {Piece} from './Piece';
 import {getPlayer, getPieces} from '../../utils';
-import {fetchValidMoves, unSelectTile, move} from './boardSlice';
+import {fetchValidMoves, unSelectTile, playerMove} from './boardSlice';
 
 type Props = {};
 
@@ -30,7 +30,7 @@ export const Board = ({}: Props) => {
       dispatch(unSelectTile());
     } else {
       // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      dispatch(move(index));
+      dispatch(playerMove(index));
     }
   };
 
