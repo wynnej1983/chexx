@@ -1,25 +1,25 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Chess} from 'chess.js';
 import {AppThunk} from '../../app/store';
-import {indexToPos, posToIndex, getPlayer, getPieces} from '../../utils';
+import {indexToPos, posToIndex, getPieces} from '../../utils';
 
 interface BoardState {
   fen: string;
-  selectedIndex: number;
+  selectedTile: number;
   validMoves: number[];
   lastMove: number[];
-  check: boolean;
-  gameOver: boolean;
+  isCheck: boolean;
+  isGameOver: boolean;
   ai: boolean;
 }
 
 const initialState: BoardState = {
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-  selectedIndex: -1,
+  selectedTile: -1,
   validMoves: [],
   lastMove: [],
-  check: false,
-  gameOver: false,
+  isCheck: false,
+  isGameOver: false,
   ai: true,
 };
 
@@ -28,13 +28,13 @@ export const board = createSlice({
   initialState,
   reducers: {
     selectTile: (state, action: PayloadAction<number>) => {
-      state.selectedIndex = action.payload;
+      state.selectedTile = action.payload;
     },
     unSelectTile: state => {
-      state.selectedIndex = -1;
+      state.selectedTile = -1;
     },
     move: (state, action: PayloadAction<number>) => {
-      const {selectedIndex, fen} = state;
+      const {selectedTile: selectedIndex, fen} = state;
       const from = indexToPos(selectedIndex);
       const to = indexToPos(action.payload);
       const engine = new Chess(fen);
@@ -44,10 +44,10 @@ export const board = createSlice({
         'q'; // default to queen
       engine.move({from, to, promotion});
       state.lastMove = [selectedIndex, action.payload];
-      state.check = engine.in_check();
-      state.gameOver = engine.game_over();
+      state.isCheck = engine.in_check();
+      state.isGameOver = engine.game_over();
       state.fen = engine.fen();
-      state.selectedIndex = -1;
+      state.selectedTile = -1;
       state.validMoves = [];
     },
     getValidMovesSuccess: (state, action: PayloadAction<number[]>) => {
@@ -71,21 +71,20 @@ export const fetchValidMoves = (index: number): AppThunk => (
   const {
     board: {fen},
   } = getState();
-  const isWhite = getPlayer(fen) === 'white';
   const pos = indexToPos(index);
   const engine = new Chess(fen);
   const validMoves = engine
     .moves({square: pos, verbose: true})
-    .map((move: any) => posToIndex(move.to, isWhite));
+    .map((move: any) => posToIndex(move.to));
   dispatch(getValidMovesSuccess(validMoves));
 };
 
 export const playerMove = (index: number): AppThunk => (dispatch, getState) => {
   dispatch(move(index));
   const {
-    board: {ai, gameOver},
+    board: {ai, isGameOver},
   } = getState();
-  if (ai && !gameOver) {
+  if (ai && !isGameOver) {
     setTimeout(() => dispatch(aiMove()), 2000);
   }
 };
@@ -94,11 +93,10 @@ export const aiMove = (): AppThunk => (dispatch, getState) => {
   const {
     board: {fen},
   } = getState();
-  const isWhite = getPlayer(fen) === 'white';
   const engine = new Chess(fen);
   const validMoves = engine.moves({verbose: true}).map((move: any) => ({
-    from: posToIndex(move.from, isWhite),
-    to: posToIndex(move.to, isWhite),
+    from: posToIndex(move.from),
+    to: posToIndex(move.to),
   }));
   const aiMove = validMoves[Math.floor(Math.random() * validMoves.length)];
   dispatch(selectTile(aiMove.from));

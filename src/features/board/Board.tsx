@@ -1,11 +1,10 @@
 import React from 'react';
-import {LayoutAnimation} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import styled from 'styled-components/native';
 import {RootState} from 'src/app/rootReducer';
 import {Tile} from './Tile';
 import {Piece} from './Piece';
-import {getPlayer, getPieces} from '../../utils';
+import {getPlayer, getPieces, getPieceColor} from '../../utils';
 import {fetchValidMoves, unSelectTile, playerMove} from './boardSlice';
 
 type Props = {};
@@ -13,24 +12,23 @@ type Props = {};
 export const Board = ({}: Props) => {
   const {
     fen,
-    selectedIndex,
+    selectedTile,
     validMoves,
     lastMove,
-    check,
-    gameOver,
+    isCheck,
+    isGameOver,
   } = useSelector((state: RootState) => state.board);
   const dispatch = useDispatch();
   const player = getPlayer(fen);
   const pieces = getPieces(fen);
 
-  const onTilePressed = (index: number) => {
-    if (selectedIndex < 0) {
-      dispatch(fetchValidMoves(index));
-    } else if (selectedIndex === index) {
+  const onTilePressed = (idx: number) => {
+    if (selectedTile === idx) {
       dispatch(unSelectTile());
+    } else if (getPieceColor(pieces[idx]) === player) {
+      dispatch(fetchValidMoves(idx));
     } else {
-      // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      dispatch(playerMove(index));
+      dispatch(playerMove(idx));
     }
   };
 
@@ -41,20 +39,18 @@ export const Board = ({}: Props) => {
           <Tile
             index={idx}
             disabled={
-              gameOver ||
-              (pieces[idx] === '-' && selectedIndex < 0) ||
-              (!validMoves.includes(idx) &&
-                selectedIndex > -1 &&
-                idx !== selectedIndex) ||
-              (selectedIndex < 0 &&
-                (pieces[idx] === pieces[idx].toUpperCase()
-                  ? 'white'
-                  : 'black') !== player)
+              isGameOver ||
+              (selectedTile < 0
+                ? getPieceColor(pieces[idx]) !== player
+                : !validMoves.includes(idx) &&
+                  getPieceColor(pieces[idx]) !== player)
             }
-            selected={selectedIndex === idx}
+            selected={selectedTile === idx}
             lastMove={lastMove.includes(idx)}
-            validMove={selectedIndex > -1 && validMoves.includes(idx)}
-            check={check && pieces[idx] === (player === 'white' ? 'K' : 'k')}
+            validMove={selectedTile > -1 && validMoves.includes(idx)}
+            isCheck={
+              isCheck && pieces[idx] === (player === 'white' ? 'K' : 'k')
+            }
             onPress={onTilePressed}
           />
           {piece !== '-' && <Piece index={idx} type={piece} />}

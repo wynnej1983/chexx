@@ -8,7 +8,7 @@ type Props = {
   selected: boolean;
   validMove: boolean;
   lastMove: boolean;
-  check: boolean;
+  isCheck: boolean;
   onPress: (index: number) => void;
 };
 
@@ -30,7 +30,7 @@ const Container = styled.TouchableOpacity<Props>`
   background-color: ${props =>
     props.selected
       ? 'rgb(200,221,243)'
-      : props.check
+      : props.isCheck
       ? 'red'
       : props.lastMove
       ? 'rgb(194,203,100)'

@@ -24,13 +24,16 @@ export const getPieces = (fen: string) =>
     .join('')
     .split('');
 
+export const getPieceColor = (piece: string) =>
+  piece !== '-' && piece === piece.toUpperCase() ? 'white' : 'black';
+
 export const getPlayer = (fen: string) =>
   fen.split(' ')[1] === 'w' ? 'white' : 'black';
 
-export const indexToPos = (i: number) =>
-  `${'abcdefgh'[i % 8]}${8 - Math.floor(i / 8)}`;
+export const indexToPos = (idx: number) =>
+  `${'abcdefgh'[idx % 8]}${8 - Math.floor(idx / 8)}`;
 
-export const posToIndex = (pos: string, isWhite: boolean) => {
+export const posToIndex = (pos: string) => {
   const [rank, row] = pos;
   const index = (8 - Number(row)) * 8 + rank.charCodeAt(0) - 'a'.charCodeAt(0);
   return index;
