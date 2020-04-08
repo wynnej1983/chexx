@@ -28,6 +28,6 @@ const Container = styled.View<{index: number}>`
 
 const Glyph = styled.Text<{color: string}>`
   color: ${props => props.color};
-  font-size: 60px;
-  line-height: 60px;
+  font-size: 70px;
+  line-height: 64px;
 `;

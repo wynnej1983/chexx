@@ -1,11 +1,12 @@
 import React from 'react';
+import {LayoutAnimation} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import styled from 'styled-components/native';
 import {RootState} from 'src/app/rootReducer';
 import {Tile} from './Tile';
 import {Piece} from './Piece';
 import {getPlayer, getPieces} from '../../utils';
-import {fetchValidMoves, move} from './boardSlice';
+import {fetchValidMoves, unSelectTile, move} from './boardSlice';
 
 type Props = {};
 
@@ -20,7 +21,10 @@ export const Board = ({}: Props) => {
   const onTilePressed = (index: number) => {
     if (selectedIndex < 0) {
       dispatch(fetchValidMoves(index));
+    } else if (selectedIndex === index) {
+      dispatch(unSelectTile());
     } else {
+      // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       dispatch(move(index));
     }
   };
@@ -33,7 +37,9 @@ export const Board = ({}: Props) => {
             index={idx}
             disabled={
               (pieces[idx] === '-' && selectedIndex < 0) ||
-              (!validMoves.includes(idx) && selectedIndex > -1) ||
+              (!validMoves.includes(idx) &&
+                selectedIndex > -1 &&
+                idx !== selectedIndex) ||
               (selectedIndex < 0 &&
                 (pieces[idx] === pieces[idx].toUpperCase()
                   ? 'white'

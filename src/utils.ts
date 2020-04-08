@@ -27,17 +27,11 @@ export const getPieces = (fen: string) =>
 export const getPlayer = (fen: string) =>
   fen.split(' ')[1] === 'w' ? 'white' : 'black';
 
-export const indexToSan = (i: number) =>
+export const indexToPos = (i: number) =>
   `${'abcdefgh'[i % 8]}${8 - Math.floor(i / 8)}`;
 
-export const sanToIndex = (san: string, isWhite: boolean) => {
-  if (san === 'O-O') {
-    return isWhite ? 62 : 6;
-  } else if (san === 'O-O-O') {
-    return isWhite ? 58 : 2;
-  }
-
-  const [rank, row] = san.slice(-2);
+export const posToIndex = (pos: string, isWhite: boolean) => {
+  const [rank, row] = pos;
   const index = (8 - Number(row)) * 8 + rank.charCodeAt(0) - 'a'.charCodeAt(0);
   return index;
 };

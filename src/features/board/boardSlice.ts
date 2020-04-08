@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Chess} from 'chess.js';
 import {AppThunk} from '../../app/store';
-import {indexToSan, sanToIndex, getPlayer} from '../../utils';
+import {indexToPos, posToIndex, getPlayer, getPieces} from '../../utils';
 
 interface BoardState {
   fen: string;
@@ -22,11 +22,18 @@ export const board = createSlice({
     selectTile: (state, action: PayloadAction<number>) => {
       state.selectedIndex = action.payload;
     },
+    unSelectTile: state => {
+      state.selectedIndex = -1;
+    },
     move: (state, action: PayloadAction<number>) => {
-      const from = indexToSan(state.selectedIndex);
-      const to = indexToSan(action.payload);
+      const from = indexToPos(state.selectedIndex);
+      const to = indexToPos(action.payload);
       const engine = new Chess(state.fen);
-      engine.move({from, to});
+      const promotion =
+        (to.includes('1') || to.includes('8')) &&
+        getPieces(state.fen)[state.selectedIndex].toLowerCase() === 'p' &&
+        'q'; // default to queen
+      engine.move({from, to, promotion});
       state.fen = engine.fen();
       state.selectedIndex = -1;
       state.validMoves = [];
@@ -37,7 +44,12 @@ export const board = createSlice({
   },
 });
 
-export const {getValidMovesSuccess, selectTile, move} = board.actions;
+export const {
+  getValidMovesSuccess,
+  selectTile,
+  unSelectTile,
+  move,
+} = board.actions;
 
 export const fetchValidMoves = (index: number): AppThunk => (
   dispatch,
@@ -48,11 +60,11 @@ export const fetchValidMoves = (index: number): AppThunk => (
     board: {fen},
   } = getState();
   const isWhite = getPlayer(fen) === 'white';
-  const san = indexToSan(index);
+  const pos = indexToPos(index);
   const engine = new Chess(fen);
   const validMoves = engine
-    .moves({square: san})
-    .map((san: string) => sanToIndex(san, isWhite));
+    .moves({square: pos, verbose: true})
+    .map((move: any) => posToIndex(move.to, isWhite));
   dispatch(getValidMovesSuccess(validMoves));
 };
 
