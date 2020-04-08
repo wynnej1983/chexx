@@ -2,6 +2,8 @@
 
 Chess mobile app built with ReactNative/ReduxToolkit and dumb AI
 
+<img src="/chexx.png" alt="Chexx"/>
+
 ## Installation
 
     $ yarn
@@ -24,4 +26,3 @@ Chess mobile app built with ReactNative/ReduxToolkit and dumb AI
 ## Contributing
 
 Contributers welcome!
-
