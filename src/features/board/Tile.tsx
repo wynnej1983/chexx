@@ -15,7 +15,7 @@ type Props = {
 export const Tile = (props: Props) => {
   const {index, validMove, onPress} = props;
   return (
-    <Container {...props} onPress={() => onPress(index)}>
+    <Container {...props} onPress={() => onPress(index)} activeOpacity={1}>
       {validMove && <Dot />}
     </Container>
   );

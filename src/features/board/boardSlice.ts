@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Chess} from 'chess.js';
 import {AppThunk} from '../../app/store';
-import {indexToPos, posToIndex, getPieces} from '../../utils';
+import {indexToPos, posToIndex, getPieces, getPromotion} from '../../utils';
 import ai from '../../ai';
 
 interface BoardState {
@@ -45,14 +45,13 @@ export const board = createSlice({
     move: (state, action: PayloadAction<number>) => {
       const index = action.payload;
       const {selectedPiece, fen} = state;
-      const from = indexToPos(selectedPiece);
-      const to = indexToPos(index);
-      const promotion =
-        (to.includes('1') || to.includes('8')) &&
-        getPieces(fen)[selectedPiece].toLowerCase() === 'p' &&
-        'q'; // default to queen
+      const promotion = getPromotion(fen, selectedPiece, index);
       const engine = new Chess(fen);
-      engine.move({from, to, promotion});
+      engine.move({
+        from: indexToPos(selectedPiece),
+        to: indexToPos(index),
+        promotion,
+      });
       state.lastMove = [selectedPiece, index];
       state.isCheck = engine.in_check();
       state.isGameOver = engine.game_over();

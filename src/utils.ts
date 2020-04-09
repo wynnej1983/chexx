@@ -30,6 +30,19 @@ export const getPieceColor = (piece: string) =>
 export const getPlayer = (fen: string) =>
   fen.split(' ')[1] === 'w' ? 'white' : 'black';
 
+export const getPromotion = (
+  fen: string,
+  selectedPiece: number,
+  index: number,
+) => {
+  const to = indexToPos(index);
+  return (
+    (to.includes('1') || to.includes('8')) &&
+    getPieces(fen)[selectedPiece].toLowerCase() === 'p' &&
+    'q'
+  ); // default to queen
+};
+
 export const indexToPos = (idx: number) =>
   `${'abcdefgh'[idx % 8]}${8 - Math.floor(idx / 8)}`;
 

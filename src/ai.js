@@ -183,7 +183,7 @@ var getPieceValue = function (piece, x, y) {
   if (piece === null) {
     return 0;
   }
-  var getAbsoluteValue = function (piece, isWhite, x, y) {
+  var getAbsoluteValue = function (isWhite) {
     if (piece.type === 'p') {
       return 10 + (isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x]);
     } else if (piece.type === 'r') {
@@ -200,7 +200,7 @@ var getPieceValue = function (piece, x, y) {
     throw 'Unknown piece type: ' + piece.type;
   };
 
-  var absoluteValue = getAbsoluteValue(piece, piece.color === 'w', x, y);
+  var absoluteValue = getAbsoluteValue(piece.color === 'w');
   return piece.color === 'w' ? absoluteValue : -absoluteValue;
 };
 
