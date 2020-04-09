@@ -2,6 +2,7 @@ import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Chess} from 'chess.js';
 import {AppThunk} from '../../app/store';
 import {indexToPos, posToIndex, getPieces} from '../../utils';
+import ai from '../../ai';
 
 interface BoardState {
   fen: string;
@@ -68,7 +69,7 @@ export const playerMove = (index: number): AppThunk => (dispatch, getState) => {
     board: {ai, isGameOver},
   } = getState();
   if (ai && !isGameOver) {
-    setTimeout(() => dispatch(aiMove()), 2000);
+    setTimeout(() => dispatch(aiMove()), 1);
   }
 };
 
@@ -77,11 +78,9 @@ export const aiMove = (): AppThunk => (dispatch, getState) => {
     board: {fen},
   } = getState();
   const engine = new Chess(fen);
-  const validMoves = engine.moves({verbose: true}).map((move: any) => ({
-    from: posToIndex(move.from),
-    to: posToIndex(move.to),
-  }));
-  const {from, to} = validMoves[Math.floor(Math.random() * validMoves.length)];
+  const aiMove = ai(3, engine, true);
+  const from = posToIndex(aiMove.from);
+  const to = posToIndex(aiMove.to);
   dispatch(selectPiece(from));
   dispatch(move(to));
 };
