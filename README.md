@@ -1,6 +1,6 @@
 # chexx
 
-Chess mobile app built with ReactNative/ReduxToolkit and dumb AI
+Chess mobile app built with ReactNative/ReduxToolkit and simple AI
 
 <img src="/chexx_screenshot.png" alt="chexx"/>
 
