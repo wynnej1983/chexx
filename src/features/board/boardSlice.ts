@@ -5,7 +5,7 @@ import {indexToPos, posToIndex, getPieces} from '../../utils';
 
 interface BoardState {
   fen: string;
-  selectedTile: number;
+  selectedPiece: number;
   validMoves: number[];
   lastMove: number[];
   isCheck: boolean;
@@ -15,7 +15,7 @@ interface BoardState {
 
 const initialState: BoardState = {
   fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-  selectedTile: -1,
+  selectedPiece: -1,
   validMoves: [],
   lastMove: [],
   isCheck: false,
@@ -27,57 +27,40 @@ export const board = createSlice({
   name: 'board',
   initialState,
   reducers: {
-    selectTile: (state, action: PayloadAction<number>) => {
-      state.selectedTile = action.payload;
+    selectPiece: (state, action: PayloadAction<number>) => {
+      const index = action.payload;
+      const {fen} = state;
+      state.selectedPiece = index;
+      const pos = indexToPos(index);
+      const engine = new Chess(fen);
+      const validMoves = engine
+        .moves({square: pos, verbose: true})
+        .map((move: any) => posToIndex(move.to));
+      state.validMoves = validMoves;
     },
-    unSelectTile: state => {
-      state.selectedTile = -1;
+    unSelectPiece: state => {
+      state.selectedPiece = -1;
     },
     move: (state, action: PayloadAction<number>) => {
-      const {selectedTile: selectedIndex, fen} = state;
-      const from = indexToPos(selectedIndex);
-      const to = indexToPos(action.payload);
-      const engine = new Chess(fen);
+      const index = action.payload;
+      const {selectedPiece, fen} = state;
+      const from = indexToPos(selectedPiece);
+      const to = indexToPos(index);
       const promotion =
         (to.includes('1') || to.includes('8')) &&
-        getPieces(fen)[selectedIndex].toLowerCase() === 'p' &&
+        getPieces(fen)[selectedPiece].toLowerCase() === 'p' &&
         'q'; // default to queen
+      const engine = new Chess(fen);
       engine.move({from, to, promotion});
-      state.lastMove = [selectedIndex, action.payload];
+      state.lastMove = [selectedPiece, index];
       state.isCheck = engine.in_check();
       state.isGameOver = engine.game_over();
       state.fen = engine.fen();
-      state.selectedTile = -1;
+      state.selectedPiece = -1;
       state.validMoves = [];
-    },
-    getValidMovesSuccess: (state, action: PayloadAction<number[]>) => {
-      state.validMoves = action.payload;
     },
   },
 });
-
-export const {
-  getValidMovesSuccess,
-  selectTile,
-  unSelectTile,
-  move,
-} = board.actions;
-
-export const fetchValidMoves = (index: number): AppThunk => (
-  dispatch,
-  getState,
-) => {
-  dispatch(selectTile(index));
-  const {
-    board: {fen},
-  } = getState();
-  const pos = indexToPos(index);
-  const engine = new Chess(fen);
-  const validMoves = engine
-    .moves({square: pos, verbose: true})
-    .map((move: any) => posToIndex(move.to));
-  dispatch(getValidMovesSuccess(validMoves));
-};
 
 export const playerMove = (index: number): AppThunk => (dispatch, getState) => {
   dispatch(move(index));
@@ -98,9 +81,11 @@ export const aiMove = (): AppThunk => (dispatch, getState) => {
     from: posToIndex(move.from),
     to: posToIndex(move.to),
   }));
-  const aiMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-  dispatch(selectTile(aiMove.from));
-  dispatch(move(aiMove.to));
+  const {from, to} = validMoves[Math.floor(Math.random() * validMoves.length)];
+  dispatch(selectPiece(from));
+  dispatch(move(to));
 };
+
+export const {selectPiece, unSelectPiece, move} = board.actions;
 
 export default board.reducer;

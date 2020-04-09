@@ -5,14 +5,14 @@ import {RootState} from 'src/app/rootReducer';
 import {Tile} from './Tile';
 import {Piece} from './Piece';
 import {getPlayer, getPieces, getPieceColor} from '../../utils';
-import {fetchValidMoves, unSelectTile, playerMove} from './boardSlice';
+import {selectPiece, unSelectPiece, playerMove} from './boardSlice';
 
 type Props = {};
 
 export const Board = ({}: Props) => {
   const {
     fen,
-    selectedTile,
+    selectedPiece,
     validMoves,
     lastMove,
     isCheck,
@@ -22,11 +22,17 @@ export const Board = ({}: Props) => {
   const player = getPlayer(fen);
   const pieces = getPieces(fen);
 
-  const onTilePressed = (idx: number) => {
-    if (selectedTile === idx) {
-      dispatch(unSelectTile());
-    } else if (getPieceColor(pieces[idx]) === player) {
-      dispatch(fetchValidMoves(idx));
+  const canSelectTile = (idx: number) =>
+    !isGameOver &&
+    (selectedPiece < 0
+      ? getPieceColor(pieces[idx]) === player
+      : validMoves.includes(idx) || getPieceColor(pieces[idx]) === player);
+
+  const onTileSelected = (idx: number) => {
+    if (getPieceColor(pieces[idx]) === player) {
+      selectedPiece !== idx
+        ? dispatch(selectPiece(idx))
+        : dispatch(unSelectPiece());
     } else {
       dispatch(playerMove(idx));
     }
@@ -38,20 +44,14 @@ export const Board = ({}: Props) => {
         <React.Fragment key={idx}>
           <Tile
             index={idx}
-            disabled={
-              isGameOver ||
-              (selectedTile < 0
-                ? getPieceColor(pieces[idx]) !== player
-                : !validMoves.includes(idx) &&
-                  getPieceColor(pieces[idx]) !== player)
-            }
-            selected={selectedTile === idx}
+            disabled={!canSelectTile(idx)}
+            selected={selectedPiece === idx}
             lastMove={lastMove.includes(idx)}
-            validMove={selectedTile > -1 && validMoves.includes(idx)}
+            validMove={selectedPiece > -1 && validMoves.includes(idx)}
             isCheck={
               isCheck && pieces[idx] === (player === 'white' ? 'K' : 'k')
             }
-            onPress={onTilePressed}
+            onPress={onTileSelected}
           />
           {piece !== '-' && <Piece index={idx} type={piece} />}
         </React.Fragment>
