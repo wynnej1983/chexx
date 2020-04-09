@@ -25,7 +25,7 @@ export const getPieces = (fen: string) =>
     .split('');
 
 export const getPieceColor = (piece: string) =>
-  piece !== '-' && piece === piece.toUpperCase() ? 'white' : 'black';
+  piece !== '-' && (piece === piece.toUpperCase() ? 'white' : 'black');
 
 export const getPlayer = (fen: string) =>
   fen.split(' ')[1] === 'w' ? 'white' : 'black';
